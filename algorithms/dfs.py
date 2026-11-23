@@ -11,5 +11,34 @@ class DFS(BaseSearch):
         self.depth_limit = depth_limit
 
     def search(self, initial: State) -> SearchResult:
-        # TODO: implemente a DFS aqui
-        raise NotImplementedError("Implemente o método search na classe DFS.")
+        result = SearchResult(solution=None, nodes_generated=1, max_frontier_size=1)
+
+        frontier = [initial]
+        # Menor profundidade em que cada estado foi alcançado (evita ciclos)
+        best_depth = {initial.tiles: initial.cost}
+
+        while frontier:
+            node = frontier.pop()
+
+            if node.is_goal:
+                result.solution = node
+                result.depth = node.cost
+                return result
+
+            if node.cost >= self.depth_limit:
+                continue
+
+            result.nodes_expanded += 1
+
+            # Empilha invertido para explorar na ordem UP, DOWN, LEFT, RIGHT
+            for child in reversed(node.neighbors()):
+                result.nodes_generated += 1
+                known = best_depth.get(child.tiles)
+                if known is not None and known <= child.cost:
+                    continue
+                best_depth[child.tiles] = child.cost
+                frontier.append(child)
+
+            result.max_frontier_size = max(result.max_frontier_size, len(frontier))
+
+        return result
